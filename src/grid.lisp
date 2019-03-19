@@ -58,7 +58,7 @@
            ;; adding a wall there the cells aren't connected
            (format stream "|")
            (dolist (c row)
-             (format stream " ")
+             (format stream "   ")
              (format stream
              (if (cell-linked-p c (cell-get-neighbour c 'east))
                  " "
@@ -70,12 +70,12 @@
            (dolist (c row)
              (format stream
                      (if (cell-linked-p c (cell-get-neighbour c 'south))
-                         " +"
-                         "-+")))
+                         "   +"
+                         "---+")))
            (format stream "~%")))
     (format stream "+")
     (loop for i below (grid-ncols self)
-          do (format stream "-+")
+          do (format stream "---+")
           finally (format stream "~%"))
     (grid-map-row self #'draw-row)))
          
