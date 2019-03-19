@@ -41,14 +41,16 @@
     (loop for i below rows do
           (funcall fn 
                    (loop for j below cols
-                         collect (aref grid i j))))))
+                         collect (aref grid i j)))))
+  self)
 
 
 (defmethod grid-map ((self grid) fn)
   (with-slots (rows cols grid) self
     (loop for i below rows do
           (loop for j below cols do
-                (funcall fn (aref grid i j))))))
+                (funcall fn (aref grid i j)))))
+  self)
 
 
 
