@@ -10,11 +10,9 @@
                  (dir (random 2)))
              ;; perform digging according to the algorithm
              ;; accounting border elements
-             ;; first case - nowhere to go
-             (cond ((and (null n) (null e)) nil)
-                   ;; second case - can't go north, go east
+             (cond ;; can't go north, go east
                    ((null n) (cell-link cell e))
-                   ;; third case - can't go east, go north 
+                   ;; can't go east, go north 
                    ((null e) (cell-link cell n))
                    ;; rest - cointoss
                    (t (cell-link cell (if (= dir 0) n e)))))))

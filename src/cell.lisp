@@ -9,14 +9,16 @@
 
 
 (defmethod cell-link ((self cell) other &optional (bidi t))
-  (setf (gethash other (slot-value self 'links)) t)
-  (when bidi (cell-link other self nil))
+  (when other
+    (setf (gethash other (slot-value self 'links)) t)
+    (when bidi (cell-link other self nil)))
   (values))
 
 
 (defmethod cell-unlink ((self cell) other &optional (bidi t))
-  (remhash other (slot-value self 'links))
-  (when bidi (cell-unlink other self nil))
+  (when other
+    (remhash other (slot-value self 'links))
+    (when bidi (cell-unlink other self nil)))
   (values))
 
 
