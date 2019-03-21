@@ -71,7 +71,8 @@
            (algo-fun (cond ((eql algo 'binary-tree) #'binary-tree)
                            ((eql algo 'sidewinder) #'sidewinder)
                            (t #'identity))))
-      (setf grid (funcall algo-fun (make-instance 'grid :rows size :cols size))))))
+      (setf grid (funcall algo-fun (make-instance 'grid :rows size :cols size)))
+      ;; force redisplay
 ;;
 
 
