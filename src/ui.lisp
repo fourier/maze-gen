@@ -26,6 +26,8 @@
    (draw-board output-pane
                :min-width 600
                :min-height 600
+               :draw-with-buffer t
+               :resize-callback 'on-resize-draw-board
                :display-callback 'on-redisplay-draw-board)
    (algorithm-panel radio-button-panel
                    :visible-max-width nil
@@ -73,12 +75,46 @@
                            (t #'identity))))
       (setf grid (funcall algo-fun (make-instance 'grid :rows size :cols size)))
       ;; force redisplay
-;;
-
+      (gp:invalidate-rectangle draw-board))))
 
 
 (defun on-redisplay-draw-board (pane x y width height)
-  (gp:draw-circle pane 100 100 50))
+  (with-slots (grid) (capi:element-interface pane)
+    ;; calculate draw area
+    (let* ((area-x (+ 5 x))
+           (area-y (+ 5 y))
+           (area-w (- width 10 ))
+           (area-h (- height 10))
+           ;; shortcuts for sizes
+           (nrows (grid-nrows grid))
+           (ncols (grid-ncols grid))
+           ;; calculate labyrinth "cell" width/height
+           (cell-w (/ area-w ncols))
+           (cell-h (/ area-h nrows)))
+      (flet ((draw-cell (c)
+               (let ((x1 (+ area-x (* (cell-col c) cell-w)))
+                     (y1 (+ area-y (* (cell-row c) cell-h)))
+                     (x2 (+ area-x (* (1+ (cell-col c)) cell-w)))
+                     (y2 (+ area-y (* (1+ (cell-row c)) cell-h)))
+                     (n (cell-get-neighbour c 'north))
+                     (s (cell-get-neighbour c 'south))
+                     (e (cell-get-neighbour c 'east))
+                     (w (cell-get-neighbour c 'west)))
+                 ;; upper boundary - if no north cell
+                 (unless n (gp:draw-line pane x1 y1 x2 y1))
+                 ;; westen boundary - if no west cell
+                 (unless w (gp:draw-line pane x1 y1 x1 y2))
+                 ;; eastern boundary - if no eastern cell linked
+                 (unless (cell-linked-p c e) (gp:draw-line pane x2 y1 x2 y2))
+                 ;; southern boundary - if no southern cell linked
+                 (unless (cell-linked-p c s) (gp:draw-line pane x1 y2 x2 y2)))))
+        ;; draw border
+        (gp:draw-rectangle pane area-x area-y area-w area-h :filled t :foreground :grey85)
+        (grid-map grid #'draw-cell)))))
+
+
+(defun on-resize-draw-board (pane x y width height)
+  (on-redisplay-draw-board pane x y width height))
 
 
 (defun main-ui ()
