@@ -19,5 +19,6 @@
                  (:file "cell")
                  (:file "grid")
                  (:file "dungeon")
-                 (:file "binary-tree"))))
+                 (:file "binary-tree")
+                 #+lispworks(:file "ui"))))
   :description "Procedural maze generation")
