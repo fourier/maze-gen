@@ -1,6 +1,9 @@
 (in-package :maze-gen)
 
 (defun sidewinder (grid)
+  "Sidewinder maze generation algorithm.
+Returns the copy of the grid with boundaries
+removed to form a maze"
   (labels ((sample (run)
              (nth (random (length run)) run))
            (close-run (run)

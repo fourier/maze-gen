@@ -1,6 +1,9 @@
 (in-package :maze-gen)
 
 (defun binary-tree (grid)
+  "Binary tree maze generation algorithm.
+Returns the copy of the grid with boundaries
+removed to form a maze"
   (flet ((bin-tree-cell (cell)
            ;; get neighbors - northern and eastern
            (let ((n (cell-get-neighbour cell 'north))
