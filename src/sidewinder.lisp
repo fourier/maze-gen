@@ -16,9 +16,13 @@
                        (e (cell-get-neighbour c 'east)))
                    ;; add current cell to run
                    (push c run)
-                   (cond ((or (null n) (= dir 1)) (cell-link c e))
-                         ;; can't go east, close run
-                         ((or (null e) (= dir 0))
-                              (close-run run)
-                              (setf run nil))))))))
+                   ;; check different scenarios
+                   ;; first can't go north, make a way eastwards
+                   (cond ((null n) (cell-link c e))
+                         ;; can't go east, close the run                         
+                         ((null e) (close-run run) (setf run nil))
+                         ;; coin shows go east
+                         ((= dir 1) (cell-link c e))
+                         ;; coin shows go north (close the run)
+                         ((= dir 0) (close-run run) (setf run nil))))))))
     (grid-map-row grid #'sidewinder-row)))

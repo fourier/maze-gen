@@ -62,14 +62,16 @@ The row is provided as a list of cells"
 
 
 
-(defmethod grid-draw ((self grid) &optional (stream *standard-output*))
+(defmethod grid-draw ((self grid) &optional
+                      (cell-draw (lambda (c s) (declare (ignore c)) (format s "   ")))
+                      (stream *standard-output*)) 
   "Print the grid as ascii-graphics to the STREAM"
   (flet ((draw-row (row)
            ;; draw the grid line itself, moving to east and
            ;; adding a wall there the cells aren't connected
            (format stream "|")
            (dolist (c row)
-             (format stream "   ")
+             (funcall cell-draw c stream)
              (format stream
              (if (cell-linked-p c (cell-get-neighbour c 'east))
                  " "

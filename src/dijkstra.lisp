@@ -1,19 +1,26 @@
 (in-package :maze-gen)
 
-(defun dijkstra-old (grid start-cell end-cell)
-  ;; a list of visited cells. The key is the cell, the
-  ;; value is the distance (number)
-  (let ((visited (make-hash-table)))
-    ;; some auxulary functions
-    (flet ((visited-p (c) (not (null (gethash c visited))))
-           (frontier (c) (remove-if #'visited-p (cell-links cell)))
-           (visit-frontier (front value)
-             (mapc (lambda (c) (setf (gethash c visited) value)) front)))
-      (let ((front (list start-cell))
-            (current-depth 0))
-        (visit-frontier front current-depth)))))
-
-
+(defun dijkstra-shortest-path (grid start-cell end-cell)
+  (loop with table = (dijkstra-bfs grid start-cell)
+        with current-cell = end-cell
+        for links = (cell-links current-cell)
+        until (eql current-cell start-cell)
+        do
+        (setf current-cell
+              ;; find neighbor with shortest distance,
+              ;; just findind minimum in the list
+              (loop with d = (gethash (car links) table)
+                    with r = (car links)
+                    for c in links
+                    for d1 = (gethash c table)
+                    if (< d1 d)
+                    do
+                    (setf d d1
+                          r c)
+                    finally (return r)))
+        collecting current-cell into result
+        finally (return (cons end-cell result))))
+  
 (defun dijkstra-bfs (grid start-cell)
   ;; a hash table of visited cells. The key is the cell, the
   ;; value is the distance (number)
