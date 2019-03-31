@@ -16,6 +16,7 @@
   :components ((:module "src"
                 :components
                 ((:file "package")
+                 (:file "utils")
                  (:file "cell")
                  (:file "grid")
                  (:file "dungeon")
