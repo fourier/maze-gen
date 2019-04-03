@@ -102,5 +102,47 @@ The row is provided as a list of cells"
       (grid-map-row self #'draw-row))))
 
 
+(defmethod grid-create-walls ((self grid))
+  "Create the list of walls. A wall will be the
+combination of coordinates (x1 y1 x2 y2), where
+the coordinates basically indexes, i.e.
+0 0 0 1"
+  (let* ((nrows (grid-nrows self))
+         (ncols (grid-ncols self))
+         ;; first we create the northen big wall and
+         ;; western big wall and push them to result
+         (result (list (list 0 0 ncols 0) (list 0 0 0 nrows))))
+    (dotimes (r nrows)
+      (dotimes (c ncols)
+        (let* ((cell (grid-cell self r c))
+               (s (cell-get-neighbour cell 'south))
+               (e (cell-get-neighbour cell 'east)))
+          ;; Example:
+          ;; +---+---+---+
+          ;; |           |
+          ;; +---+   +---+
+          ;; |           |
+          ;; +   +---+   +
+          ;; | X |       |
+          ;; +---+---+---+
+          ;; cell X: c = 0 r = 2 
+          ;; walls: south x1 = 0 y1 = 3, x2 = 1 y2 = 3
+          ;;        east: x1 = 1 y1 = 2, x2 = 1 y2 = 3
+          ;; eastern boundary - if no eastern cell linked               
+          (unless (cell-linked-p cell e)
+            (push (list (1+ c) r (1+ c) (1+ r)) result))
+          ;; southern boundary - if no southern cell linked
+          (unless (cell-linked-p cell s)
+            (push (list c (1+ r) (1+ c) (1+ r)) result)))))
+    result))
+
+
+(defun walls-optimize (walls-list)
+  "Try to optimize walls list by connecting close walls,
+i.e. then the end of one wall is the beginning of another.
+Will return the new list optimized 1 pass"
+  (let ((new-walls-list))
+    walls-list))
+
 
 ;; end

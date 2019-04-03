@@ -90,27 +90,19 @@
            (ncols (grid-ncols grid))
            ;; calculate labyrinth "cell" width/height
            (cell-w (/ area-w ncols))
-           (cell-h (/ area-h nrows)))
-      (flet ((draw-cell (c)
-               (let ((x1 (+ area-x (* (cell-col c) cell-w)))
-                     (y1 (+ area-y (* (cell-row c) cell-h)))
-                     (x2 (+ area-x (* (1+ (cell-col c)) cell-w)))
-                     (y2 (+ area-y (* (1+ (cell-row c)) cell-h)))
-                     (n (cell-get-neighbour c 'north))
-                     (s (cell-get-neighbour c 'south))
-                     (e (cell-get-neighbour c 'east))
-                     (w (cell-get-neighbour c 'west)))
-                 ;; upper boundary - if no north cell
-                 (unless n (gp:draw-line pane x1 y1 x2 y1))
-                 ;; westen boundary - if no west cell
-                 (unless w (gp:draw-line pane x1 y1 x1 y2))
-                 ;; eastern boundary - if no eastern cell linked
-                 (unless (cell-linked-p c e) (gp:draw-line pane x2 y1 x2 y2))
-                 ;; southern boundary - if no southern cell linked
-                 (unless (cell-linked-p c s) (gp:draw-line pane x1 y2 x2 y2)))))
-        ;; draw border
-        (gp:draw-rectangle pane area-x area-y area-w area-h :filled t :foreground :grey85)
-        (grid-map grid #'draw-cell)))))
+           (cell-h (/ area-h nrows))
+           (walls (grid-create-walls grid)))
+      ;; draw border
+      (gp:draw-rectangle pane area-x area-y area-w area-h :filled t :foreground :grey85)      
+      (dolist (w walls)
+        (destructuring-bind (x1 y1 x2 y2) w
+          (gp:draw-line pane
+                        (+ area-x (* x1 cell-w))
+                        (+ area-y (* y1 cell-h))
+                        (+ area-x (* x2 cell-w))
+                        (+ area-y (* y2 cell-h))))))))
+
+
 
 
 (defun on-resize-draw-board (pane x y width height)
