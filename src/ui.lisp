@@ -8,6 +8,18 @@
                               (lambda ()
                                 ,@body)))
 
+(define-interface maze-trenchbroom-window ()
+  ((grid :initarg :grid))
+  (:panes
+   (tb-preview output-pane
+               :min-width 600
+               :min-height 600
+               :draw-with-buffer t
+               :resize-callback (lambda (pane x y width height)
+                                  (on-redisplay-tb-preview pane x y width height))
+               :display-callback 'on-redisplay-tb-preview))
+  (:default-initargs :title (format nil "Trenchbroom export preview")))
+  
 
 (define-interface maze-gen-ui ()
   (grid)
@@ -21,7 +33,11 @@
           (display-message-on-screen
            (convert-to-screen nil)
            "Procedural Maze Generator ~a~%Copyright (c) Alexey Veretennikov(fourier) 2019" *version*))
-        :callback-type :none))))))
+        :callback-type :none)
+       ("Preview Trenchbroom export"
+        :callback
+        #'preview-trechbroom
+        :callback-type :interface))))))
   (:panes
    (draw-board output-pane
                :min-width 600
@@ -107,6 +123,23 @@
 
 (defun on-resize-draw-board (pane x y width height)
   (on-redisplay-draw-board pane x y width height))
+
+(defun preview-trechbroom (iface)
+  (capi:display (make-instance 'maze-trenchbroom-window :grid (slot-value iface 'grid))))
+
+
+(defun on-redisplay-tb-preview (pane x y width height)
+  (with-slots (grid) (capi:element-interface pane)
+    (let ((walls ;;'((0 1 1 1) (0 0 0 1) (0 0 1 0) (1 0 2 0) (0 1 0 2))))
+           (grid-create-walls grid)))
+      (dolist (w walls)
+        (destructuring-bind ((x1 . y1) (x2 . y2) (x3 . y3) (x4 . y4))
+            (mapcar (lambda (p) (cons (+ x (/ (car p) 4)) (+ y (/ (cdr p) 4))))
+                    (apply #'wall-to-corners w))
+          (gp:draw-line pane x1 y1 x2 y2)
+          (gp:draw-line pane x2 y2 x3 y3)
+          (gp:draw-line pane x3 y3 x4 y4)
+          (gp:draw-line pane x4 y4 x1 y1))))))
 
 
 (defun main-ui ()

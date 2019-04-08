@@ -62,9 +62,9 @@ The row is provided as a list of cells"
 
 
 
-(defmethod grid-draw ((self grid) &optional
-                      (cell-draw (lambda (c s) (declare (ignore c)) (format s "   ")))
-                      (stream *standard-output*)) 
+(defmethod grid-print ((self grid) &optional
+                       (cell-draw (lambda (c s) (declare (ignore c)) (format s "   ")))
+                       (stream *standard-output*)) 
   "Print the grid as ascii-graphics to the STREAM"
   (flet ((draw-row (row)
            ;; draw the grid line itself, moving to east and
@@ -102,7 +102,7 @@ The row is provided as a list of cells"
       (grid-map-row self #'draw-row))))
 
 
-(defmethod grid-create-walls ((self grid))
+(defmethod grid-make-walls ((self grid))
   "Create the list of walls. A wall will be the
 combination of coordinates (x1 y1 x2 y2), where
 the coordinates basically indexes, i.e.
@@ -141,6 +141,7 @@ the coordinates basically indexes, i.e.
   "Try to optimize walls list by connecting close walls,
 i.e. then the end of one wall is the beginning of another.
 Will return the new list optimized 1 pass"
+  (warn "Not implemented")
   (let ((new-walls-list))
     walls-list))
 
