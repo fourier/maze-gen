@@ -69,3 +69,92 @@
               size (1- size))
         res))))
 
+
+
+(defgeneric plane-equation (v1 v2 v3)
+  (:documentation
+   "Calculate the plane equation in format
+Ax+By+Cz+D=0 and returns values A B C D
+v1,v2,v3 are vertices.
+
+The equation is calculated via
+https://www.wolframalpha.com/input/?i=Collect%5Bdet%5B%7Bx-x1,+x2-x1,+x3-x1%7D,%7By-y1,+y2-y1,+y3-y1%7D,%7Bz-z1,+z2-z1,+z3-z1%7D%5D,+%7Bx,y,z%7D%5D
+  
+x (y1 z2 - y1 z3 - y2 z1 + y2 z3 + y3 z1 - y3 z2) + y (-x1 z2 + x1 z3 + x2 z1 - x2 z3 - x3 z1 + x3 z2) + z (x1 y2 - x1 y3 - x2 y1 + x2 y3 + x3 y1 - x3 y2) - x1 y2 z3 + x1 y3 z2 + x2 y1 z3 - x2 y3 z1 - x3 y1 z2 + x3 y2 z1
+
+Hence
+A = (y1 z2 - y1 z3 - y2 z1 + y2 z3 + y3 z1 - y3 z2)
+B = (-x1 z2 + x1 z3 + x2 z1 - x2 z3 - x3 z1 + x3 z2)
+C = (x1 y2 - x1 y3 - x2 y1 + x2 y3 + x3 y1 - x3 y2)
+D = - x1 y2 z3 + x1 y3 z2 + x2 y1 z3 - x2 y3 z1 - x3 y1 z2 + x3 y2 z1"))
+
+(defun plane-equation-impl (x1 y1 z1 x2 y2 z2 x3 y3 z3)
+  "Actual calculation of the plane equation"
+  (let ((A (- (+ (* y1 z2) (* y2 z3) (* y3 z1))
+              (+ (* y1 z3) (* y2 z1) (* y3 z2))))
+        (B (- (+ (* x1 z3) (* x2 z1) (* x3 z2))
+              (+ (* x1 z2) (* x2 z3) (* x3 z1))))
+        (C (- (+ (* x1 y2) (* x2 y3) (* x3 y1))
+              (+ (* x1 y3) (* x2 y1) (* x3 y2))))
+        (D (- (+ (* x1 y3 z2) (* x2 y1 z3) (* x3 y2 z1))
+              (+ (* x1 y2 z3) (* x2 y3 z1) (* x3 y1 z2)))))
+    (list A B C D)))
+
+
+(defmethod plane-equation ((v1 list) (v2 list) (v3 list))
+  "Calculate plane equation parameters by given 3 lists of coordinates"
+  (let* ((x1 (first v1))
+         (x2 (first v2))
+         (x3 (first v3))
+         (y1 (second v1))
+         (y2 (second v2))
+         (y3 (second v3))
+         (z1 (third v1))
+         (z2 (third v2))
+         (z3 (third v3)))
+    (plane-equation-impl x1 y1 z1 x2 y2 z2 x3 y3 z3)))
+
+
+(defun plane-normal-oriented (v1 v2 v3)
+  (if (not (plane-positive-oriented-p v1 v2 v3))
+      ;; if not, swap the vertices
+      (list v2 v1 v3))
+  (list v1 v2 v3))
+
+(defun vec-minus (v1 v2)
+  "Subtract V2 from V1. V1 and V2 are lists of 3 coordinates."
+  (list (- (first v1) (first v2))
+        (- (second v1) (second v2))
+        (- (third v1) (third v2))))
+
+(defun vec-dot-product (u v)
+  "Dot product of vectors u and v. U and V are lists of 3 coordinates.
+See http://mathworld.wolfram.com/DotProduct.html"
+  (+ (* (first u) (first v))
+     (* (second u) (second v))
+     (* (third u) (third v))))
+
+(defun vec-cross-product (u v)
+  "Cross product of vectors u and v. U and V are lists of 3 coordinates.
+See http://mathworld.wolfram.com/CrossProduct.html"
+  (let ((ux (first u)) (uy (second u)) (uz (third u))
+        (vx (first v)) (vy (second v)) (vz (third v)))
+    (list
+     (- (* uy vz) (* uz vy))
+     (- (* uz vx) (* ux vz))
+     (- (* ux vy) (* uy vx)))))
+        
+
+(defun plane-positive-oriented-p (v1 v2 v3)
+  ;; calculate the normal to the plane constructed from the
+  ;; first 3 points
+  (let* ((normal (plane-equation v1 v2 v3))
+         ;; calculate the cos of the angle between 2 vectors
+         ;; on a plane and normal, to determine the orientation
+         ;; by the sign of the angle
+         (angle (vec-dot-product
+                 (vec-cross-product (vec-minus v3 v1)
+                                    (vec-minus v2 v1))
+                 normal)))
+    (format t "Normal: ~a Angle: ~f~%" normal angle)
+    (> angle 0)))

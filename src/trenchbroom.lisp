@@ -43,12 +43,15 @@ all 4 points, corners of the wall on a plane"
     ;; by adding wall width to either x or y coordinates
     (if (= x-top x-bottom)
         ;; vertical wall
-        (setf result (append result (list (cons (+ xb *wall-width*) yb)
-                                          (cons (+ xa *wall-width*) ya))))
+        (progn 
+          (setf result (append result (list (cons (+ xb *wall-width*) yb)
+                                            (cons (+ xa *wall-width*) ya))))
+          ;; swap the 1st and 3rd nodes to have the same ordering of nodes
+          ;; regardless if the wall is horizontal or vertical
+          (rotatef (second result) (fourth result)))
         ;; horizontal wall
         (setf result (append result (list (cons xb (+ yb *wall-width*))
                                           (cons xa (+ ya *wall-width*))))))
-
     (nreverse result)))
             
 
@@ -65,15 +68,40 @@ all 4 points, corners of the wall on a plane"
 
 (defun 3d-corners-to-planes (3d-corners)
   "Convert the list of 8 3d-corders of the brush to the
-list of 6 planes - each formed by 3 3d-corders"
+list of 6 planes - each formed by 3 3d-corders.
+The 3d corners are supposed to have the following orientation
+and numbering:
+First 4 is the corners of the lower plane of the brick
+Next 4 are corners just above the first 4. The numbering is
+like this:
+
+  4---------3
+  |         |
+  |         |
+  |         |
+  1---------2
+
+The order of points in plane, when looking from outside the face:
+
+   1
+   |
+   |
+   |
+   |
+   0-----------2
+
+"
   (destructuring-bind (p1 p2 p3 p4 pp1 pp2 pp3 pp4) 3d-corners
-    (list (list p1 p2 p3)
-          (list pp1 pp2 pp3)
-          (list p1 p2 pp2)
-          (list p1 p4 pp4)
-          (list p2 p3 pp3)
-          (list p3 p4 pp4))))
-      
+    (declare (ignore pp2))
+    (let ((result
+           (list
+            (list p4 p3 p1)
+            (list pp4 pp1 pp3)
+            (list p4 p1 pp4)
+            (list p1 p2 pp1)
+            (list p3 pp3 p2)
+            (list p4 pp4 p3))))
+      result)))
                                                      
 (defmethod export-trenchbroom ((self grid) filename)
   (with-open-file (out filename :direction :output :if-exists :supersede)
@@ -83,11 +111,11 @@ list of 6 planes - each formed by 3 3d-corders"
 {
 \"classname\" \"worldspawn\"
 \"wad\" \"C:/q1mapping/wads/START.WAD\"~%")
-    (export-brushes self out)
+    (export-brushes1 self out)
     (format out "}~%")))
 
 
-(defun export-brushes (grid out)
+(defun export-brushes1 (grid out)
   (let* ((nrows (grid-nrows grid))
          (ncols (grid-ncols grid))
          (full-cell-width (+ *hallway-width* *wall-width*))
@@ -97,16 +125,29 @@ list of 6 planes - each formed by 3 3d-corders"
          (cell-h (/ area-h nrows))
          (offset-x (- center-x))
          (offset-y (- center-y))
-         (walls (grid-create-walls grid)))
+         (walls (grid-make-walls grid)))
     (mapcar (lambda (w)
               (export-brush 
                (3d-corners-to-planes (2d-corners-to-3d-corners (apply #'wall-to-corners w))) out))
-            walls)))
+                        walls)))
+
+
+(defun export-brushes (grid out)
+  (export-brush 
+   (3d-corners-to-planes
+    (create-brick)) out))
+
+;; test function: creates a brick of proper node orientation
+(defun create-brick ()
+  '((0 32 0) (32 32 0) (32 0 0) (0 0 0)
+    (0 32 16) (32 32 16) (32 0 16) (0 0 16)))
+        
+
 
 (defun export-brush (planes out)
   (format out "{~%")
   (dolist (p planes)
     (dolist (n p)
       (format out "(~{~d~^ ~}) " n))
-    (format out "~a -0 -0 -0 1 1~%" *wall-texture*))
+    (format out "~a 0 0 0 1 1~%" *wall-texture*))
   (format out "}~%"))

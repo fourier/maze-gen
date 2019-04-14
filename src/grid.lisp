@@ -134,7 +134,7 @@ the coordinates basically indexes, i.e.
           ;; southern boundary - if no southern cell linked
           (unless (cell-linked-p cell s)
             (push (list c (1+ r) (1+ c) (1+ r)) result)))))
-    result))
+    (nreverse result)))
 
 
 (defun walls-optimize (walls-list)

@@ -107,7 +107,7 @@
            ;; calculate labyrinth "cell" width/height
            (cell-w (/ area-w ncols))
            (cell-h (/ area-h nrows))
-           (walls (grid-create-walls grid)))
+           (walls (grid-make-walls grid)))
       ;; draw border
       (gp:draw-rectangle pane area-x area-y area-w area-h :filled t :foreground :grey85)      
       (dolist (w walls)
@@ -131,7 +131,7 @@
 (defun on-redisplay-tb-preview (pane x y width height)
   (with-slots (grid) (capi:element-interface pane)
     (let ((walls ;;'((0 1 1 1) (0 0 0 1) (0 0 1 0) (1 0 2 0) (0 1 0 2))))
-           (grid-create-walls grid)))
+           (grid-make-walls grid)))
       (dolist (w walls)
         (destructuring-bind ((x1 . y1) (x2 . y2) (x3 . y3) (x4 . y4))
             (mapcar (lambda (p) (cons (+ x (/ (car p) 4)) (+ y (/ (cdr p) 4))))
