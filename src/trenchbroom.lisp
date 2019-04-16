@@ -115,7 +115,7 @@ The order of points in plane, when looking from outside the face:
     (format out "}~%")))
 
 
-(defun export-brushes1 (grid out)
+(defun export-brushes (grid out)
   (let* ((nrows (grid-nrows grid))
          (ncols (grid-ncols grid))
          (full-cell-width (+ *hallway-width* *wall-width*))
@@ -132,7 +132,24 @@ The order of points in plane, when looking from outside the face:
                         walls)))
 
 
-(defun export-brushes (grid out)
+(defun export-brushes1 (grid out)
+  (let* ((nrows (grid-nrows grid))
+         (ncols (grid-ncols grid))
+         (full-cell-width (+ *hallway-width* *wall-width*))
+         (center-x (/ (* ncols full-cell-width) 2))
+         (center-y (/ (* nrows full-cell-width) 2))
+         (cell-w (/ area-w ncols))
+         (cell-h (/ area-h nrows))
+         (offset-x (- center-x))
+         (offset-y (- center-y))
+         (walls (grid-make-blocks grid)))
+    (mapcar (lambda (w)
+              (export-brush 
+               (3d-corners-to-planes (2d-corners-to-3d-corners w)) out))
+            walls)))
+
+
+(defun export-brick-brush (grid out)
   (export-brush 
    (3d-corners-to-planes
     (create-brick)) out))
@@ -151,3 +168,134 @@ The order of points in plane, when looking from outside the face:
       (format out "(~{~d~^ ~}) " n))
     (format out "~a 0 0 0 1 1~%" *wall-texture*))
   (format out "}~%"))
+
+
+;; ===================================
+(defun create-horizontal-wall (&key (extend-west nil) (extend-east nil))
+  ;; the wall is created like this:
+  ;;
+  ;;      *hallway-width*
+  ;;
+  ;; (x4 y4)-----------(x3 y3)  
+  ;;    |                 |
+  ;;    |                 |   *wall-width*
+  ;;    |                 |
+  ;; (x1 y1)-----------(x2 y2)
+  ;;
+  (let* ((x1 0)
+         (y1 *wall-width*)
+         (x2 *hallway-width*)
+         (y2 y1)
+         (x3 x2)
+         (y3 0)
+         (x4 0)
+         (y4 0))
+    (when extend-west 
+      (decf x1 *wall-width*)
+      (decf x4 *wall-width*))
+    (when extend-east 
+      (incf x2 *wall-width*)
+      (incf x3 *wall-width*))
+    (list (cons x1 y1) (cons x2 y2) (cons x3 y3) (cons x4 y4))))
+  
+
+(defun create-vertical-wall (&optional (cut-on-top-p nil))
+  ;; the wall is created like this:
+  ;;
+  ;;      *wall-width*
+  ;;
+  ;; (x4 y4)----(x3 y3)  
+  ;;    |          |
+  ;;    |          |   *hallway-width*
+  ;;    |          |
+  ;;    |          |
+  ;;    |          |
+  ;;    |          |
+  ;; (x1 y1)----(x2 y2)
+  ;;
+  (let* ((x1 0)
+         (y1 (+ *wall-width* *hallway-width*))
+         (x2 *wall-width*)
+         (y2 y1)
+         (x3 x2)
+         (y3 0)
+         (x4 0)
+         (y4 0))
+    (when cut-on-top-p
+      (incf y3 *wall-width*)
+      (incf y4 *wall-width*))
+    (list (cons x1 y1) (cons x2 y2) (cons x3 y3) (cons x4 y4))))
+
+
+(defun move-wall (wall offset-x offset-y)
+  (mapcar (lambda (p) (cons (+ (car p) offset-x) (+ (cdr p) offset-y)))
+          wall))
+
+(defun extend-wall (wall direction length)
+  (destructuring-bind (p1 p2 p3 p4) wall
+    (eswitch (direction)
+      ('north (list p1 p2
+                    (cons (car p3) (- (cdr p3) length))
+                    (cons (car p4) (- (cdr p4) length))))
+      ('south (list (cons (car p1) (+ (cdr p1) length))
+                    (cons (car p2) (+ (cdr p2) length))
+                    p3 p4))
+      ('west (list (cons (- (car p1) length) (cdr p1)) p2
+                   p3
+                   (cons (- (car p4) length) (cdr p4))))
+      ('east (list p1 (cons (+ (car p2) length) (cdr p2))
+                   (cons (+ (car p3) length) (cdr p3))
+                   p4)))))
+
+(defun grid-make-blocks (grid)
+  (let* ((nrows (grid-nrows grid))
+         (ncols (grid-ncols grid))
+         ;; first we create the northen big wall and
+         ;; western big wall and push them to result
+         (result (list (extend-wall (create-horizontal-wall) 'east
+                                    (+ (* (1- ncols) (+ *wall-width* *hallway-width*))
+                                       (* 2 *wall-width*))) ; 2 bounding walls
+                       (extend-wall (move-wall (create-vertical-wall) 0 *wall-width*) 'south
+                                    (* (1- nrows) (+ *wall-width* *hallway-width*))))))
+    (dotimes (r nrows)
+      (dotimes (c ncols)
+        (let* ((cell (grid-cell grid r c))
+               (s (cell-get-neighbour cell 'south))
+               (e (cell-get-neighbour cell 'east))
+               (w (cell-get-neighbour cell 'west))
+               (offset-x (+ *wall-width* (* c (+ *hallway-width* *wall-width*))))
+               (offset-y (+ *wall-width* (* r (+ *hallway-width* *wall-width*))))
+               (has-eastern-wall (not (cell-linked-p cell e)))
+               (has-southern-wall (not (cell-linked-p cell s)))
+               (has-western-wall (not (cell-linked-p cell w)))
+               (last-horizontal-wall-extended-to-east
+                (and w (not (cell-linked-p w (cell-get-neighbour w 'south))))))
+          ;; different kind of blocks
+          ;; we never create northern or western boundaries
+          ;; so only possible options are:
+          ;; +   +   +   +
+          ;;   a |     b 
+          ;; +---+   +---+
+          ;; 
+          ;; +   +   +   +
+          ;;   c |     d  
+          ;; +   +   +   +
+          (cond ((and has-southern-wall has-eastern-wall) ;; case a
+                 (push (move-wall (create-horizontal-wall :extend-west
+                                                          (and (not has-western-wall)
+                                                               (not last-horizontal-wall-extended-to-east))
+                                                          :extend-east (not has-eastern-wall))
+                                  offset-x (+ *hallway-width* offset-y)) result)
+                 (push (move-wall (create-vertical-wall)
+                                  (+ *hallway-width* offset-x) offset-y) result))
+
+                ((and has-southern-wall (not has-eastern-wall)) ;; case b
+                 (push (move-wall (create-horizontal-wall :extend-west
+                                                          (and (not has-western-wall)
+                                                               (not last-horizontal-wall-extended-to-east))
+                                                          :extend-east (not has-eastern-wall))
+                                  offset-x (+ *hallway-width* offset-y)) result))
+                ((and has-eastern-wall (not has-southern-wall)) ;; case c
+                 (push (move-wall (create-vertical-wall)
+                                  (+ *hallway-width* offset-x) offset-y) result))))))
+          (nreverse result)))

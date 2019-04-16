@@ -128,7 +128,7 @@
   (capi:display (make-instance 'maze-trenchbroom-window :grid (slot-value iface 'grid))))
 
 
-(defun on-redisplay-tb-preview (pane x y width height)
+(defun on-redisplay-tb-preview1 (pane x y width height)
   (with-slots (grid) (capi:element-interface pane)
     (let ((walls ;;'((0 1 1 1) (0 0 0 1) (0 0 1 0) (1 0 2 0) (0 1 0 2))))
            (grid-make-walls grid)))
@@ -136,6 +136,19 @@
         (destructuring-bind ((x1 . y1) (x2 . y2) (x3 . y3) (x4 . y4))
             (mapcar (lambda (p) (cons (+ x (/ (car p) 4)) (+ y (/ (cdr p) 4))))
                     (apply #'wall-to-corners w))
+          (gp:draw-line pane x1 y1 x2 y2)
+          (gp:draw-line pane x2 y2 x3 y3)
+          (gp:draw-line pane x3 y3 x4 y4)
+          (gp:draw-line pane x4 y4 x1 y1))))))
+
+(defun on-redisplay-tb-preview (pane x y width height)
+  (with-slots (grid) (capi:element-interface pane)
+    (let ((blocks
+           (grid-make-blocks grid)))
+      (dolist (b blocks)
+        (destructuring-bind ((x1 . y1) (x2 . y2) (x3 . y3) (x4 . y4))
+            (mapcar (lambda (p) (cons (+ x (/ (car p) 4)) (+ y (/ (cdr p) 4))))
+                    b)
           (gp:draw-line pane x1 y1 x2 y2)
           (gp:draw-line pane x2 y2 x3 y3)
           (gp:draw-line pane x3 y3 x4 y4)

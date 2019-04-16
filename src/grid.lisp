@@ -137,6 +137,9 @@ the coordinates basically indexes, i.e.
     (nreverse result)))
 
 
+  
+
+
 (defun walls-optimize (walls-list)
   "Try to optimize walls list by connecting close walls,
 i.e. then the end of one wall is the beginning of another.
