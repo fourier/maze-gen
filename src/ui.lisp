@@ -17,8 +17,19 @@
                :draw-with-buffer t
                :resize-callback (lambda (pane x y width height)
                                   (on-redisplay-tb-preview pane x y width height))
-               :display-callback 'on-redisplay-tb-preview))
-  (:default-initargs :title (format nil "Trenchbroom export preview")))
+               :display-callback 'on-redisplay-tb-preview)
+   (export-button push-button
+                  :text "Export to TrenchBroom..."
+                  :data grid
+                  :callback-type :data
+                  :callback 'on-export-tb-button))
+  (:layouts
+   (main-layout column-layout
+                '(tb-preview export-button)
+                :gap 10 ;; distance between elements
+                :internal-border 20 ;; distance to border of the frame
+                :adjust :center))
+  (:default-initargs :title (format nil "Trenchbroom export preview") :layout 'main-layout))
   
 
 (define-interface maze-gen-ui ()
@@ -34,7 +45,7 @@
            (convert-to-screen nil)
            "Procedural Maze Generator ~a~%Copyright (c) Alexey Veretennikov(fourier) 2019" *version*))
         :callback-type :none)
-       ("Preview Trenchbroom export"
+       ("Export..."
         :callback
         #'preview-trechbroom
         :callback-type :interface))))))
@@ -128,19 +139,6 @@
   (capi:display (make-instance 'maze-trenchbroom-window :grid (slot-value iface 'grid))))
 
 
-(defun on-redisplay-tb-preview1 (pane x y width height)
-  (with-slots (grid) (capi:element-interface pane)
-    (let ((walls ;;'((0 1 1 1) (0 0 0 1) (0 0 1 0) (1 0 2 0) (0 1 0 2))))
-           (grid-make-walls grid)))
-      (dolist (w walls)
-        (destructuring-bind ((x1 . y1) (x2 . y2) (x3 . y3) (x4 . y4))
-            (mapcar (lambda (p) (cons (+ x (/ (car p) 4)) (+ y (/ (cdr p) 4))))
-                    (apply #'wall-to-corners w))
-          (gp:draw-line pane x1 y1 x2 y2)
-          (gp:draw-line pane x2 y2 x3 y3)
-          (gp:draw-line pane x3 y3 x4 y4)
-          (gp:draw-line pane x4 y4 x1 y1))))))
-
 (defun on-redisplay-tb-preview (pane x y width height)
   (with-slots (grid) (capi:element-interface pane)
     (let ((blocks
@@ -153,6 +151,17 @@
           (gp:draw-line pane x2 y2 x3 y3)
           (gp:draw-line pane x3 y3 x4 y4)
           (gp:draw-line pane x4 y4 x1 y1))))))
+
+
+(defun on-export-tb-button (data)
+  (multiple-value-bind (filename successp filter-name)
+      (prompt-for-file "Enter a filename:"
+                       :if-exists :prompt :if-does-not-exist :ok
+                       :operation :save
+                       :filter "*.map")
+    (declare (ignore filter-name))
+    (when successp
+      (export-trenchbroom data filename))))
 
 
 (defun main-ui ()

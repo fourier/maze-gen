@@ -23,38 +23,6 @@
   "Ceil texture from START.WAD")
 
  
-(defun wall-to-corners (x-top y-top x-bottom y-bottom)
-  "Convert the wall in cell-indices format to the
-actual coordinates on a plane.
-Return the list of conses - coordinates - of
-all 4 points, corners of the wall on a plane"
-  (let ((result nil)
-        (vertical (= x-top x-bottom))
-        (xa (+ (* x-top (+ *wall-width* *hallway-width*)) *wall-width*))
-        (ya (* y-top (+ *wall-width* *hallway-width*)))
-        (xb (+ (* x-bottom (+ *wall-width* *hallway-width*)) *wall-width*))
-        (yb (* y-bottom (+ *wall-width* *hallway-width*))))
-    (when vertical
-        (setf xa (- xa *wall-width*)
-              xb (- xb *wall-width*)))
-    (push (cons xb yb) result)
-    (push (cons xa ya) result)
-    ;; now 2 points calculated, need to calculate another 2
-    ;; by adding wall width to either x or y coordinates
-    (if (= x-top x-bottom)
-        ;; vertical wall
-        (progn 
-          (setf result (append result (list (cons (+ xb *wall-width*) yb)
-                                            (cons (+ xa *wall-width*) ya))))
-          ;; swap the 1st and 3rd nodes to have the same ordering of nodes
-          ;; regardless if the wall is horizontal or vertical
-          (rotatef (second result) (fourth result)))
-        ;; horizontal wall
-        (setf result (append result (list (cons xb (+ yb *wall-width*))
-                                          (cons xa (+ ya *wall-width*))))))
-    (nreverse result)))
-            
-
 (defun 2d-corners-to-3d-corners (corners)
   "Convert the list of 4 2d-points to the list of 8 3d-points"
   (append (mapcar
@@ -111,28 +79,11 @@ The order of points in plane, when looking from outside the face:
 {
 \"classname\" \"worldspawn\"
 \"wad\" \"C:/q1mapping/wads/START.WAD\"~%")
-    (export-brushes1 self out)
+    (export-brushes self out)
     (format out "}~%")))
 
 
 (defun export-brushes (grid out)
-  (let* ((nrows (grid-nrows grid))
-         (ncols (grid-ncols grid))
-         (full-cell-width (+ *hallway-width* *wall-width*))
-         (center-x (/ (* ncols full-cell-width) 2))
-         (center-y (/ (* nrows full-cell-width) 2))
-         (cell-w (/ area-w ncols))
-         (cell-h (/ area-h nrows))
-         (offset-x (- center-x))
-         (offset-y (- center-y))
-         (walls (grid-make-walls grid)))
-    (mapcar (lambda (w)
-              (export-brush 
-               (3d-corners-to-planes (2d-corners-to-3d-corners (apply #'wall-to-corners w))) out))
-                        walls)))
-
-
-(defun export-brushes1 (grid out)
   (let* ((nrows (grid-nrows grid))
          (ncols (grid-ncols grid))
          (full-cell-width (+ *hallway-width* *wall-width*))
@@ -148,18 +99,7 @@ The order of points in plane, when looking from outside the face:
                (3d-corners-to-planes (2d-corners-to-3d-corners w)) out))
             walls)))
 
-
-(defun export-brick-brush (grid out)
-  (export-brush 
-   (3d-corners-to-planes
-    (create-brick)) out))
-
-;; test function: creates a brick of proper node orientation
-(defun create-brick ()
-  '((0 32 0) (32 32 0) (32 0 0) (0 0 0)
-    (0 32 16) (32 32 16) (32 0 16) (0 0 16)))
         
-
 
 (defun export-brush (planes out)
   (format out "{~%")
@@ -170,7 +110,6 @@ The order of points in plane, when looking from outside the face:
   (format out "}~%"))
 
 
-;; ===================================
 (defun create-horizontal-wall (&key (extend-west nil) (extend-east nil))
   ;; the wall is created like this:
   ;;
@@ -228,10 +167,14 @@ The order of points in plane, when looking from outside the face:
 
 
 (defun move-wall (wall offset-x offset-y)
+  "Move the wall to specified offset-x and offset-y.
+Return the new wall"
   (mapcar (lambda (p) (cons (+ (car p) offset-x) (+ (cdr p) offset-y)))
           wall))
 
 (defun extend-wall (wall direction length)
+  "Extend the wall - updating coordinates - in specified direction.
+Return the new wall"
   (destructuring-bind (p1 p2 p3 p4) wall
     (eswitch (direction)
       ('north (list p1 p2
@@ -248,6 +191,8 @@ The order of points in plane, when looking from outside the face:
                    p4)))))
 
 (defun grid-make-blocks (grid)
+  "Create a list of blocks - foundations of the walls for the grid.
+Every block is a list of pairs (x, y) - the corners of the block."
   (let* ((nrows (grid-nrows grid))
          (ncols (grid-ncols grid))
          ;; first we create the northen big wall and
@@ -299,3 +244,16 @@ The order of points in plane, when looking from outside the face:
                  (push (move-wall (create-vertical-wall)
                                   (+ *hallway-width* offset-x) offset-y) result))))))
           (nreverse result)))
+
+
+;;;;;; Test functions
+
+(defun export-brick-brush (out)
+  (export-brush 
+   (3d-corners-to-planes
+    (create-brick)) out))
+
+;; test function: creates a brick of proper node orientation
+(defun create-brick ()
+  '((0 32 0) (32 32 0) (32 0 0) (0 0 0)
+    (0 32 16) (32 32 16) (32 0 16) (0 0 16)))
