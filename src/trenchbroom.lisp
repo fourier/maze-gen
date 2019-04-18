@@ -23,15 +23,15 @@
   "Ceil texture from START.WAD")
 
  
-(defun 2d-corners-to-3d-corners (corners)
+(defun 2d-corners-to-3d-corners (corners &key (offset-z 0) (height *wall-height*))
   "Convert the list of 4 2d-points to the list of 8 3d-points"
   (append (mapcar
            (lambda (c)
-             (list (car c) (cdr c) 0))
+             (list (car c) (cdr c) offset-z))
            corners)
           (mapcar
            (lambda (c)
-             (list (car c) (cdr c) *wall-height*))
+             (list (car c) (cdr c) (+ offset-z height)))
            corners)))
 
 (defun 3d-corners-to-planes (3d-corners)
@@ -89,24 +89,29 @@ The order of points in plane, when looking from outside the face:
          (full-cell-width (+ *hallway-width* *wall-width*))
          (center-x (/ (* ncols full-cell-width) 2))
          (center-y (/ (* nrows full-cell-width) 2))
-         (cell-w (/ area-w ncols))
-         (cell-h (/ area-h nrows))
          (offset-x (- center-x))
          (offset-y (- center-y))
-         (walls (grid-make-blocks grid)))
+         (walls (grid-make-blocks grid))
+         (floors (grid-make-floors grid)))
     (mapcar (lambda (w)
               (export-brush 
-               (3d-corners-to-planes (2d-corners-to-3d-corners w)) out))
-            walls)))
+               (3d-corners-to-planes (2d-corners-to-3d-corners (move-wall w offset-x offset-y))) out))
+            walls)
+    (mapcar (lambda (w)
+              (export-brush
+               (3d-corners-to-planes (2d-corners-to-3d-corners (move-wall w offset-x offset-y)
+                                                               :offset-z 16 :height 16)) out
+               :texture *floor-texture*))
+            floors)))
 
         
 
-(defun export-brush (planes out)
+(defun export-brush (planes out &key (texture *wall-texture*))
   (format out "{~%")
   (dolist (p planes)
     (dolist (n p)
       (format out "(~{~d~^ ~}) " n))
-    (format out "~a 0 0 0 1 1~%" *wall-texture*))
+    (format out "~a 0 0 0 1 1~%" texture))
   (format out "}~%"))
 
 
@@ -245,6 +250,24 @@ Every block is a list of pairs (x, y) - the corners of the block."
                                   (+ *hallway-width* offset-x) offset-y) result))))))
           (nreverse result)))
 
+
+(defun grid-make-floors (grid)
+  "Create a list of blocks - floors of the cells.
+Every block is a list of pairs (x, y) - the corners of the block."
+  (let* ((nrows (grid-nrows grid))
+         (ncols (grid-ncols grid))
+         (width (+ *hallway-width* *wall-width*))
+         (height (+ *hallway-width* *wall-width*))
+         (total-width (+ (* nrows width) *wall-width*))
+         (total-height (+ (* ncols height) *wall-width*))
+         (result nil))
+    ;; just one big block for now
+    (push (list (cons 0 total-height)
+                (cons total-width total-height)
+                (cons total-width 0)
+                (cons 0 0))
+          result)
+    result))
 
 ;;;;;; Test functions
 
