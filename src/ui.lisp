@@ -121,14 +121,49 @@
            (walls (grid-make-walls grid))
            (pixmap (gp:create-pixmap-port pane width height :background :grey :clear t)))
       ;; draw border
-      (gp:draw-rectangle pixmap area-x area-y area-w area-h :filled t :foreground :grey85)      
+      (gp:draw-rectangle pixmap area-x area-y area-w area-h :filled t :foreground :grey85)
+      (multiple-value-bind (start-end distances) (dijkstra-longest-path grid)
+        (let ((max-distance (gethash (cdr start-end) distances))
+              (radius (max 2 (- (/ (min cell-w cell-h) 2.0) 4))))
+          ;; first draw the filled cells with color = intencity, distance
+          ;; between 2 star/end points
+          (grid-map grid
+                    (lambda (c)
+                      (let* ((col (cell-col c))
+                             (row (cell-row c))
+                             (d (gethash c distances))
+                             (color (color:make-rgb 0 (/ (- max-distance d) max-distance) 0)))
+                        (gp:draw-rectangle pixmap (+ area-x (* col cell-w)) (+ area-y (* row cell-h))
+                                           (1+ cell-w) (1+ cell-h)
+                                           :foreground color
+                                           :filled t))))
+          ;; then draw the start/end points
+          (gp:draw-circle pixmap
+                          (+ area-x (* (cell-col (car start-end)) cell-w)
+                             (/ cell-w 2.0))
+                          (+ area-y (* (cell-row (car start-end)) cell-w)
+                             (/ cell-h 2.0))
+                          radius
+                          :foreground :red
+                          :filled t)
+          (gp:draw-circle pixmap
+                          (+ area-x (* (cell-col (cdr start-end)) cell-w)
+                             (/ cell-w 2.0))
+                          (+ area-y (* (cell-row (cdr start-end)) cell-w)
+                             (/ cell-h 2.0))
+                          radius
+                          :foreground :red
+                          :filled nil
+                          :thickness (max 4 (/ radius 2)))))
       (dolist (w walls)
         (destructuring-bind (x1 y1 x2 y2) w
           (gp:draw-line pixmap
                         (+ area-x (* x1 cell-w))
                         (+ area-y (* y1 cell-h))
                         (+ area-x (* x2 cell-w))
-                        (+ area-y (* y2 cell-h)))))
+                        (+ area-y (* y2 cell-h))
+                        :thickness 5
+                        :foreground :purple)))
       ;; show the pixmap. 
       (gp:copy-pixels  pane pixmap x y width height 0 0))))
 
