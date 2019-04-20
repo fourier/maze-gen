@@ -1,5 +1,6 @@
 # Maze Gen - Procedural maze generation in Common Lisp
-![example](https://github.com/fourier/maze-gen/raw/screenshots/screenshot1.png "Example")
+![example1](https://github.com/fourier/maze-gen/raw/screenshots/screenshot1.png "Example 1")
+![example2](https://github.com/fourier/maze-gen/raw/screenshots/screenshot2.png "Example 2")
 
 ```lisp
 MAZE-GEN 74 > (grid-draw (binary-tree (make-instance 'grid :rows 20 :cols 20)))
