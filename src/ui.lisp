@@ -215,7 +215,7 @@
                           (let ((cx (- (+ area-x (* (cell-col c) cell-w)
                                           (/ cell-w 2.0))
                                        start-x))
-                                (cy (- (+ area-y (* (cell-row c) cell-w)
+                                (cy (- (+ area-y (* (cell-row c) cell-h)
                                           (/ cell-h 2.0))
                                        start-y)))
                             (list :line cx cy)))
