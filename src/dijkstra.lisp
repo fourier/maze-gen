@@ -1,10 +1,10 @@
 (in-package :maze-gen)
 
-(defun dijkstra-shortest-path (grid start-cell end-cell)
+(defun dijkstra-shortest-path (grid start-cell end-cell &optional distances)
   "Calculate the shortest path from the start-cell to end-cell.
 Using Dijkstra's algorithm,  backtracking.
 Returs a list of cells with a path"
-  (loop with table = (dijkstra-bfs grid start-cell)
+  (loop with table = (if distances distances (dijkstra-bfs grid start-cell))
         with current-cell = end-cell
         for links = (cell-links current-cell)
         until (eql current-cell start-cell)

@@ -64,6 +64,18 @@
                    :layout-args '(:adjust :right ;;:internal-border 20
                                   :uniform-size-p t)
                    :print-function #'cdr)
+   (draw-options-panel check-button-panel
+                       :visible-max-width nil
+                       :visible-max-height nil
+                       :items '((:draw-start-end . "Start/End cells")
+                                (:distance-intensity . "Distance intenity")
+                                (:shortest-path . "Shortest path"))
+                       :print-function #'cdr
+                       :layout-class 'column-layout
+                       :layout-args '(:adjust :right ;;:internal-border 20
+                                      :uniform-size-p t)
+                       :selection-callback 'on-draw-options-checkbox-selected
+                       :retract-callback 'on-draw-options-checkbox-retracted)
    (size-slider slider :start 10 :end 100 :tick-frequency 10)
    (convert-button push-button :text "Regenerate" :callback 'on-generate-button))
   (:layouts
@@ -75,7 +87,13 @@
                             '(size-slider)
                             :title "Size of the maze"
                             :title-position :frame)
-   (options-layout row-layout '(geometry-options-layout algorithm-options-layout))
+   (draw-options-layout column-layout
+                        '(draw-options-panel)
+                        :title "Drawing options"
+                        :title-position :frame)
+   (options-layout row-layout '(geometry-options-layout
+                                algorithm-options-layout
+                                draw-options-layout))
    (main-layout column-layout '(draw-board
                                 options-layout
                                 convert-button)
@@ -105,67 +123,97 @@
       (gp:invalidate-rectangle draw-board))))
 
 
+(defmethod setting-selected ((self maze-gen-ui) option)
+  "Check if the settings checkbox selected."
+  (when-let (selected (mapcar #'car (choice-selected-items (slot-value self 'draw-options-panel))))
+    (member option selected)))
+
+
 (defun on-redisplay-draw-board (pane x y width height)
-  (with-slots (grid) (capi:element-interface pane)
-    ;; calculate draw area
-    (let* ((area-x (+ 5 x))
-           (area-y (+ 5 y))
-           (area-w (- width 10 ))
-           (area-h (- height 10))
-           ;; shortcuts for sizes
-           (nrows (grid-nrows grid))
-           (ncols (grid-ncols grid))
-           ;; calculate labyrinth "cell" width/height
-           (cell-w (/ area-w ncols))
-           (cell-h (/ area-h nrows))
-           (walls (grid-make-walls grid))
-           (pixmap (gp:create-pixmap-port pane width height :background :grey :clear t)))
-      ;; draw border
-      (gp:draw-rectangle pixmap area-x area-y area-w area-h :filled t :foreground :grey85)
-      (multiple-value-bind (start-end distances) (dijkstra-longest-path grid)
-        (let ((max-distance (gethash (cdr start-end) distances))
-              (radius (max 2 (- (/ (min cell-w cell-h) 2.0) 4))))
-          ;; first draw the filled cells with color = intencity, distance
-          ;; between 2 star/end points
-          (grid-map grid
-                    (lambda (c)
-                      (let* ((col (cell-col c))
-                             (row (cell-row c))
-                             (d (gethash c distances))
-                             (color (color:make-rgb 0 (/ (- max-distance d) max-distance) 0)))
-                        (gp:draw-rectangle pixmap (+ area-x (* col cell-w)) (+ area-y (* row cell-h))
-                                           (1+ cell-w) (1+ cell-h)
-                                           :foreground color
-                                           :filled t))))
-          ;; then draw the start/end points
-          (gp:draw-circle pixmap
-                          (+ area-x (* (cell-col (car start-end)) cell-w)
-                             (/ cell-w 2.0))
-                          (+ area-y (* (cell-row (car start-end)) cell-w)
-                             (/ cell-h 2.0))
-                          radius
-                          :foreground :red
-                          :filled t)
-          (gp:draw-circle pixmap
-                          (+ area-x (* (cell-col (cdr start-end)) cell-w)
-                             (/ cell-w 2.0))
-                          (+ area-y (* (cell-row (cdr start-end)) cell-w)
-                             (/ cell-h 2.0))
-                          radius
-                          :foreground :red
-                          :filled nil
-                          :thickness (max 4 (/ radius 2)))))
-      (dolist (w walls)
-        (destructuring-bind (x1 y1 x2 y2) w
-          (gp:draw-line pixmap
-                        (+ area-x (* x1 cell-w))
-                        (+ area-y (* y1 cell-h))
-                        (+ area-x (* x2 cell-w))
-                        (+ area-y (* y2 cell-h))
-                        :thickness 5
-                        :foreground :purple)))
-      ;; show the pixmap. 
-      (gp:copy-pixels  pane pixmap x y width height 0 0))))
+  (let ((interface (capi:element-interface pane)))
+    (with-slots (grid) interface
+      ;; calculate draw area
+      (let* ((area-x (+ 5 x))
+             (area-y (+ 5 y))
+             (area-w (- width 10 ))
+             (area-h (- height 10))
+             ;; shortcuts for sizes
+             (nrows (grid-nrows grid))
+             (ncols (grid-ncols grid))
+             ;; calculate labyrinth "cell" width/height
+             (cell-w (/ area-w ncols))
+             (cell-h (/ area-h nrows))
+             (walls (grid-make-walls grid))
+             (pixmap (gp:create-pixmap-port pane width height :background :grey :clear t)))
+        ;; draw border
+        (gp:draw-rectangle pixmap area-x area-y area-w area-h :filled t :foreground :grey85)
+        ;; optionally draw some other attributes
+        (draw-options pixmap grid area-x area-y cell-w cell-h
+                      :draw-distances (setting-selected interface :distance-intensity)
+                      :draw-start-end (setting-selected interface :draw-start-end)
+                      :draw-shortest-path (setting-selected interface :shortest-path))
+        (dolist (w walls)
+          (destructuring-bind (x1 y1 x2 y2) w
+            (gp:draw-line pixmap
+                          (+ area-x (* x1 cell-w))
+                          (+ area-y (* y1 cell-h))
+                          (+ area-x (* x2 cell-w))
+                          (+ area-y (* y2 cell-h))
+                          :thickness 5
+                          :foreground :purple)))
+        ;; show the pixmap. 
+        (gp:copy-pixels  pane pixmap x y width height 0 0)))))
+
+(defun draw-options (pixmap grid area-x area-y cell-w cell-h
+                            &key (draw-distances nil)
+                            (draw-start-end nil)
+                            (draw-shortest-path nil))
+  (multiple-value-bind (start-end distances) (dijkstra-longest-path grid)
+    (let ((max-distance (gethash (cdr start-end) distances))
+          (radius (max 2 (- (/ (min cell-w cell-h) 2.0) 4)))
+          (shortest-path (dijkstra-shortest-path grid
+                                                 (car start-end)
+                                                 (cdr start-end)
+                                                 distances)))
+      ;; first draw the filled cells with color = intencity, distance
+      ;; between 2 star/end points
+      (when draw-distances
+        (grid-map grid
+                  (lambda (c)
+                    (let* ((col (cell-col c))
+                           (row (cell-row c))
+                           (d (gethash c distances))
+                           (color (color:make-rgb 0 (/ (- max-distance d) max-distance) 0)))
+                      (gp:draw-rectangle pixmap (+ area-x (* col cell-w)) (+ area-y (* row cell-h))
+                                         (1+ cell-w) (1+ cell-h)
+                                         :foreground color
+                                         :filled t)))))
+      ;; then draw the start/end points
+      (when draw-start-end
+        (gp:draw-circle pixmap
+                        (+ area-x (* (cell-col (car start-end)) cell-w)
+                           (/ cell-w 2.0))
+                        (+ area-y (* (cell-row (car start-end)) cell-w)
+                           (/ cell-h 2.0))
+                        radius
+                        :foreground :red
+                        :filled t)
+        (gp:draw-circle pixmap
+                        (+ area-x (* (cell-col (cdr start-end)) cell-w)
+                           (/ cell-w 2.0))
+                        (+ area-y (* (cell-row (cdr start-end)) cell-w)
+                           (/ cell-h 2.0))
+                        radius
+                        :foreground :red
+                        :filled nil
+                        :thickness (max 4 (/ radius 2))))
+      (when draw-shortest-path
+        (dolist (c shortest-path)
+          (let ((cx (+ area-x (* (cell-col c) cell-w)
+                       (/ cell-w 2.0)))
+                (cy (+ area-y (* (cell-row c) cell-w)
+                       (/ cell-h 2.0))))
+            (gp:draw-circle pixmap cx cy 2 :foreground :blue :filled t)))))))
 
 
 (defun on-resize-draw-board (pane x y width height)
@@ -200,6 +248,17 @@
       (export-trenchbroom data filename))))
 
 
+(defmethod on-draw-options-checkbox-selected (data (self maze-gen-ui))
+  "Callback called when selected one of settings checkboxes"
+  (with-slots (draw-board) self
+    (gp:invalidate-rectangle draw-board)))
+
+(defmethod on-draw-options-checkbox-retracted (data (self maze-gen-ui))
+  "Callback called when retracted selection of settings checkboxes"
+  (with-slots (draw-board) self
+    (gp:invalidate-rectangle draw-board)))
+
+  
 (defun main-ui ()
   (capi:display (make-instance 'maze-gen-ui)))
 
