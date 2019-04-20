@@ -220,7 +220,7 @@
                                        start-y)))
                             (list :line cx cy)))
                         (cdr shortest-path))))
-          (gp:draw-path pixmap gp-path start-x start-y))))))
+          (gp:draw-path pixmap gp-path start-x start-y :thickness 2 :foreground :yellow))))))
 
 
 (defun on-resize-draw-board (pane x y width height)
