@@ -3,7 +3,7 @@
 (defun dijkstra-shortest-path (grid start-cell end-cell &optional distances)
   "Calculate the shortest path from the start-cell to end-cell.
 Using Dijkstra's algorithm,  backtracking.
-Returs a list of cells with a path"
+Returs a list of cells with a path, from start tell to end-cell"
   (loop with table = (if distances distances (dijkstra-bfs grid start-cell))
         with current-cell = end-cell
         for links = (cell-links current-cell)
@@ -22,7 +22,7 @@ Returs a list of cells with a path"
                           r c)
                     finally (return r)))
         collecting current-cell into result
-        finally (return (cons end-cell result))))
+        finally (return (append (nreverse result) (list end-cell)))))
   
 (defun dijkstra-bfs (grid start-cell)
   "Breadth-first search of the calculated distances from

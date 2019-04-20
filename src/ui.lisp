@@ -68,7 +68,7 @@
                        :visible-max-width nil
                        :visible-max-height nil
                        :items '((:draw-start-end . "Start/End cells")
-                                (:distance-intensity . "Distance intenity")
+                                (:distance-intensity . "Distance intensity")
                                 (:shortest-path . "Shortest path"))
                        :print-function #'cdr
                        :layout-class 'column-layout
@@ -208,12 +208,19 @@
                         :filled nil
                         :thickness (max 4 (/ radius 2))))
       (when draw-shortest-path
-        (dolist (c shortest-path)
-          (let ((cx (+ area-x (* (cell-col c) cell-w)
-                       (/ cell-w 2.0)))
-                (cy (+ area-y (* (cell-row c) cell-w)
-                       (/ cell-h 2.0))))
-            (gp:draw-circle pixmap cx cy 2 :foreground :blue :filled t)))))))
+        (let* ((start-x (+ area-x (* (cell-col (car start-end)) cell-w) (/ cell-w 2.0)))
+               (start-y (+ area-y (* (cell-row (car start-end)) cell-w) (/ cell-h 2.0)))
+               (gp-path
+                (mapcar (lambda (c)
+                          (let ((cx (- (+ area-x (* (cell-col c) cell-w)
+                                          (/ cell-w 2.0))
+                                       start-x))
+                                (cy (- (+ area-y (* (cell-row c) cell-w)
+                                          (/ cell-h 2.0))
+                                       start-y)))
+                            (list :line cx cy)))
+                        (cdr shortest-path))))
+          (gp:draw-path pixmap gp-path start-x start-y))))))
 
 
 (defun on-resize-draw-board (pane x y width height)
