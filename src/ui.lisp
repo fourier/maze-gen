@@ -118,18 +118,19 @@
            ;; calculate labyrinth "cell" width/height
            (cell-w (/ area-w ncols))
            (cell-h (/ area-h nrows))
-           (walls (grid-make-walls grid)))
+           (walls (grid-make-walls grid))
+           (pixmap (gp:create-pixmap-port pane width height :background :grey :clear t)))
       ;; draw border
-      (gp:draw-rectangle pane area-x area-y area-w area-h :filled t :foreground :grey85)      
+      (gp:draw-rectangle pixmap area-x area-y area-w area-h :filled t :foreground :grey85)      
       (dolist (w walls)
         (destructuring-bind (x1 y1 x2 y2) w
-          (gp:draw-line pane
+          (gp:draw-line pixmap
                         (+ area-x (* x1 cell-w))
                         (+ area-y (* y1 cell-h))
                         (+ area-x (* x2 cell-w))
-                        (+ area-y (* y2 cell-h))))))))
-
-
+                        (+ area-y (* y2 cell-h)))))
+      ;; show the pixmap. 
+      (gp:copy-pixels  pane pixmap x y width height 0 0))))
 
 
 (defun on-resize-draw-board (pane x y width height)
