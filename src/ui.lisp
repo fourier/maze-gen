@@ -162,7 +162,7 @@
                           :thickness 5
                           :foreground :purple)))
         ;; show the pixmap. 
-        (gp:copy-pixels  pane pixmap x y width height 0 0)))))
+        (gp:copy-pixels pane pixmap 0 0 width height 0 0)))))
 
 (defun draw-options (pixmap grid area-x area-y cell-w cell-h
                             &key (draw-distances nil)
@@ -193,7 +193,7 @@
         (gp:draw-circle pixmap
                         (+ area-x (* (cell-col (car start-end)) cell-w)
                            (/ cell-w 2.0))
-                        (+ area-y (* (cell-row (car start-end)) cell-w)
+                        (+ area-y (* (cell-row (car start-end)) cell-h)
                            (/ cell-h 2.0))
                         radius
                         :foreground :red
@@ -201,7 +201,7 @@
         (gp:draw-circle pixmap
                         (+ area-x (* (cell-col (cdr start-end)) cell-w)
                            (/ cell-w 2.0))
-                        (+ area-y (* (cell-row (cdr start-end)) cell-w)
+                        (+ area-y (* (cell-row (cdr start-end)) cell-h)
                            (/ cell-h 2.0))
                         radius
                         :foreground :red

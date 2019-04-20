@@ -22,6 +22,7 @@
                  (:file "dungeon")
                  (:file "binary-tree")
                  (:file "sidewinder")
+                 (:file "dijkstra")
                  (:file "trenchbroom")
                  #+lispworks(:file "ui"))))
   :description "Procedural maze generation")
