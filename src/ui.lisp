@@ -208,7 +208,7 @@
                         :thickness (max 4 (/ radius 2))))
       (when draw-shortest-path
         (let* ((start-x (+ area-x (* (cell-col (car start-end)) cell-w) (/ cell-w 2.0)))
-               (start-y (+ area-y (* (cell-row (car start-end)) cell-w) (/ cell-h 2.0)))
+               (start-y (+ area-y (* (cell-row (car start-end)) cell-h) (/ cell-h 2.0)))
                (gp-path
                 (mapcar (lambda (c)
                           (let ((cx (- (+ area-x (* (cell-col c) cell-w)
