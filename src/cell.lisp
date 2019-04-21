@@ -36,9 +36,9 @@ Link means no borders between cells"
         collect key))
 
 
-(defmethod cell-neigbours ((self cell))
+(defmethod cell-neighbours ((self cell))
   "Get all cell neighbours (east,west,north,south)"
-  (loop for val being the hash-values of (slot-value self 'neigbours)
+  (loop for val being the hash-values of (slot-value self 'neighbors)
         collect val))
 
 

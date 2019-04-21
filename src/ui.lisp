@@ -59,7 +59,9 @@
    (algorithm-panel radio-button-panel
                    :visible-max-width nil
                    :visible-max-height nil
-                   :items '((binary-tree . "Binary tree") (sidewinder . "Sidewinder"))
+                   :items `((binary-tree . "Binary tree")
+                            (sidewinder . "Sidewinder")
+                            (aldous-broder . "Aldous-Broder"))
                    :layout-class 'column-layout
                    :layout-args '(:adjust :right ;;:internal-border 20
                                   :uniform-size-p t)
@@ -114,10 +116,7 @@
   (declare (ignore data))           
   (with-slots (draw-board grid size-slider algorithm-panel) self
     (let* ((size (range-slug-start size-slider))
-           (algo (car (choice-selected-item algorithm-panel)))
-           (algo-fun (cond ((eql algo 'binary-tree) #'binary-tree)
-                           ((eql algo 'sidewinder) #'sidewinder)
-                           (t #'identity))))
+           (algo-fun (car (choice-selected-item algorithm-panel))))
       (setf grid (funcall algo-fun (make-instance 'grid :rows size :cols size)))
       ;; force redisplay
       (gp:invalidate-rectangle draw-board))))
