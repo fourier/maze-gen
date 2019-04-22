@@ -25,6 +25,7 @@
                  (:file "aldous-broder")
                  (:file "wilson")
                  (:file "dijkstra")
+                 (:file "print")
                  (:file "trenchbroom")
                  #+lispworks(:file "ui"))))
   :description "Procedural maze generation")

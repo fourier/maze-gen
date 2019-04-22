@@ -65,47 +65,6 @@ The row is provided as a list of cells"
   self)
 
 
-
-(defmethod grid-print ((self grid) &optional
-                       (cell-draw (lambda (c s) (declare (ignore c)) (format s "   ")))
-                       (stream *standard-output*)) 
-  "Print the grid as ascii-graphics to the STREAM"
-  (flet ((draw-row (row)
-           ;; draw the grid line itself, moving to east and
-           ;; adding a wall there the cells aren't connected
-           (format stream "|")
-           (dolist (c row)
-             (funcall cell-draw c stream)
-             (format stream
-             (if (cell-linked-p c (cell-get-neighbour c 'east))
-                 " "
-                 "|")))
-           (format stream "~%")
-           ;; now write the southern separator line, again
-           ;; verifying if southern cells are connected
-           (format stream "+")
-           (dolist (c row)
-             (format stream
-                     (if (cell-linked-p c (cell-get-neighbour c 'south))
-                         "   +"
-                         "---+")))
-           (format stream "~%")))
-    (format stream "+")
-    (loop for i below (grid-ncols self)
-          do (format stream "---+")
-          finally (format stream "~%"))
-    (grid-map-row self #'draw-row)))
-
-(defmethod grid-draw-numbers ((self grid) weights &optional (stream *standard-output*))
-  "weidghts - a hash table with key is a cell and value is an integer"
-  (let* ((max-width (floor (1+ (log (grid-size self) 10))))
-         (fmt-str (format nil "~~{~~~dd ~~}~~%" max-width)))
-    (flet ((draw-row (row)
-             (format stream fmt-str
-                     (mapcar (lambda (c) (gethash c weights)) row))))
-      (grid-map-row self #'draw-row))))
-
-
 (defmethod grid-make-walls ((self grid))
   "Create the list of walls. A wall will be the
 combination of coordinates (x1 y1 x2 y2), where
