@@ -1,6 +1,6 @@
 (in-package :maze-gen)
 
-(defparameter *version* 0.2)
+(defparameter *version* 0.3)
 
 ;; shortcut/convenience macro
 (defmacro with-pane-process ((self) &body body)
@@ -48,6 +48,10 @@
        ("Export..."
         :callback
         #'preview-trechbroom
+        :callback-type :interface)
+       ("Save as image..."
+        :callback
+        #'save-image
         :callback-type :interface))))))
   (:panes
    (draw-board output-pane
@@ -265,7 +269,20 @@
   (with-slots (draw-board) self
     (gp:invalidate-rectangle draw-board)))
 
-  
+(defun save-image (interface)
+  (with-slots (draw-board) interface
+    ;;    (gp:invalidate-rectangle draw-board))))
+    (multiple-value-bind (filename successp filter-name)
+        (prompt-for-file "Enter a filename:"
+                         :if-exists :prompt :if-does-not-exist :ok
+                         :operation :save
+                         :filter "*.png")
+      (declare (ignore filter-name))
+      (when successp
+        (let ((img (gp:make-image-from-port draw-board)))
+          (gp:externalize-and-write-image draw-board img filename))))))
+
+
 (defun main-ui ()
   (capi:display (make-instance 'maze-gen-ui)))
 
