@@ -12,7 +12,7 @@
   :version "0.1"
   :author ""
   :license ""
-  :depends-on (alexandria split-sequence 3d-vectors 3d-matrices ppath)
+  :depends-on (alexandria)
   :components ((:module "src"
                 :components
                 ((:file "package")
