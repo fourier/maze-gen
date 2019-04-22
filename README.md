@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/fourier/maze-gen.svg?branch=master)](https://travis-ci.org/fourier/maze-gen)
 # Maze Gen - Procedural maze generation in Common Lisp
 ![example1](https://github.com/fourier/maze-gen/raw/screenshots/screenshot1.png "Example 1")
 ![example2](https://github.com/fourier/maze-gen/raw/screenshots/screenshot2.png "Example 2")
