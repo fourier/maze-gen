@@ -8,10 +8,10 @@
   (:documentation "Cell of the maze. Cell has attributes such as row, column, neighbors etc"))
 
 
-(defmethod cell-link ((self cell) other &optional (bidi t))
+(defun cell-link (self other &optional (bidi t))
   "Establish a link between 2 cells. Optionally the link is bidirectional (true by default).
 Link means no borders between cells"
-  (when other
+  (when (and self other)
     (setf (gethash other (slot-value self 'links)) t)
     (when bidi (cell-link other self nil)))
   (values))

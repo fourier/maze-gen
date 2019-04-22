@@ -23,6 +23,7 @@
                  (:file "binary-tree")
                  (:file "sidewinder")
                  (:file "aldous-broder")
+                 (:file "wilson")
                  (:file "dijkstra")
                  (:file "trenchbroom")
                  #+lispworks(:file "ui"))))

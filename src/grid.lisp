@@ -34,11 +34,15 @@ If out of bounds return nil"
   (* (slot-value self 'rows) (slot-value self 'cols)))
 
 
-(defmethod grid-random-cell ((self grid))
-  "Return the random cell of the grid"
-  (let ((r (random (slot-value self 'rows)))
-        (c (random (slot-value self 'cols))))
-    (grid-cell self r c)))
+(defmethod grid-random-cell ((self grid) &key (excluding nil))
+  "Return the random cell of the grid.
+When excluding (cell to exclude) provided search any random
+cell which is not the same and excluding."
+  (loop with nrows = (slot-value self 'rows)
+        and ncols = (slot-value self 'cols)
+        for cell = (grid-cell self (random nrows) (random ncols))
+        while (eql cell excluding)
+        finally (return cell)))
 
 
 (defmethod grid-map-row ((self grid) fn)
