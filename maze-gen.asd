@@ -20,6 +20,7 @@
                  (:file "cell")
                  (:file "grid")
                  (:file "dungeon")
+                 (:file "random-walk")
                  (:file "binary-tree")
                  (:file "sidewinder")
                  (:file "aldous-broder")
