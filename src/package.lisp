@@ -6,4 +6,4 @@
 
 (in-package :cl-user)
 (defpackage maze-gen
-    (:use :cl :alexandria :split-sequence :3d-matrices :3d-vectors #+:lispworks :capi))
+    (:use :cl :alexandria #+:lispworks :capi))
