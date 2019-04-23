@@ -26,6 +26,7 @@
                  (:file "aldous-broder")
                  (:file "wilson")
                  (:file "dijkstra")
+                 (:file "hunt-and-kill")
                  (:file "print")
                  (:file "trenchbroom")
                  #+lispworks(:file "ui"))))

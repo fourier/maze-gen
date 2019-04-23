@@ -66,7 +66,8 @@
                    :items `((binary-tree . "Binary tree")
                             (sidewinder . "Sidewinder")
                             (aldous-broder . "Aldous-Broder")
-                            (wilson . "Wilson's"))
+                            (wilson . "Wilson's")
+                            (hunt-and-kill . "Hunt-and-Kill"))
                    :layout-class 'column-layout
                    :layout-args '(:adjust :right ;;:internal-border 20
                                   :uniform-size-p t)
