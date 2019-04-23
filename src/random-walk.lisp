@@ -1,5 +1,5 @@
 (in-package :maze-gen)
-
+;;
 (defun random-walk (from finish-if &key (allow-loops nil)
                          (constraint-if
                           (lambda (c)

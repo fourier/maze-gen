@@ -8,6 +8,12 @@
   (:documentation "Cell of the maze. Cell has attributes such as row, column, neighbors etc"))
 
 
+(defmethod print-object ((self cell) out)
+  "Print overload for CELL class"
+  (format out "(~d ~d)"
+          (slot-value self 'row)
+          (slot-value self 'col)))
+
 (defun cell-link (self other &optional (bidi t))
   "Establish a link between 2 cells. Optionally the link is bidirectional (true by default).
 Link means no borders between cells"
