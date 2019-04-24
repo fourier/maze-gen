@@ -65,6 +65,15 @@ The row is provided as a list of cells"
   self)
 
 
+(defmethod grid-get-deadends ((self grid))
+  (let ((deadends nil))
+    (grid-map self
+              (lambda (c)
+                (when (= (length (cell-links c)) 1)
+                  (push c deadends))))
+    deadends))
+
+
 (defmethod grid-make-walls ((self grid))
   "Create the list of walls. A wall will be the
 combination of coordinates (x1 y1 x2 y2), where
