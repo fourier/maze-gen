@@ -22,11 +22,8 @@ removed to form a maze"
                      when (not (null (not-visited-neighbours top)))
                        do (return top)
                      finally (return nil))))
-      (loop with start-cell = (grid-cell grid 0 0 );;(grid-random-cell grid)
-              initially
-                 (push start-cell stack)
-                 (visit start-cell)
-            for cell = (backtrack)
+      (loop with start-cell = (grid-random-cell grid)
+            for cell = start-cell then (backtrack)
             while cell
             for path = (random-walk cell
                                     (lambda (c)
