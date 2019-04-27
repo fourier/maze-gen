@@ -27,7 +27,9 @@
                  (:file "wilson")
                  (:file "dijkstra")
                  (:file "hunt-and-kill")
+                 (:file "recursive-backtracker")
                  (:file "print")
                  (:file "trenchbroom")
                  #+lispworks(:file "ui"))))
   :description "Procedural maze generation")
+

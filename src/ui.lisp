@@ -67,7 +67,8 @@
                             (sidewinder . "Sidewinder")
                             (aldous-broder . "Aldous-Broder")
                             (wilson . "Wilson's")
-                            (hunt-and-kill . "Hunt-and-Kill"))
+                            (hunt-and-kill . "Hunt-and-Kill")
+                            (recursive-backtracker . "Recursive Backtracker"))
                    :layout-class 'column-layout
                    :layout-args '(:adjust :right ;;:internal-border 20
                                   :uniform-size-p t)
