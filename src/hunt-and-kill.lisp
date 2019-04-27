@@ -6,14 +6,13 @@ basically the random walk algorithm with constraints.
 Returns the copy of the grid with boundaries
 removed to form a maze"
   (let ((visited (make-hash-table)))
-    (labels ((not-visited-neighbours (c)
+    (labels ((visit (c) (setf (gethash c visited) t))
+             (visited (c) (gethash c visited))
+             (not-visited-neighbours (c)
                (remove-if
                 (lambda (c)
-                  (or (null c)
-                      (gethash c visited)))
+                  (or (null c) (visited c)))
                 (cell-neighbours c)))
-             (visit (c) (setf (gethash c visited) t))
-             (visited (c) (gethash c visited))
              (hunt ()
                (loop named hunt-loop
                      for i below (grid-nrows grid)

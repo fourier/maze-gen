@@ -19,7 +19,8 @@ shall be removed from the list of candidates to walk to"
                                      (or (null c)
                                          (funcall constraint-if c)))
                                    (cell-neighbours from))))
-                 (random-elt cells))))
+             (random-elt cells))))
+    (funcall visitor from)
     (loop with result = (list from)
           for current = (car result)
           for next = (walk current)
@@ -37,5 +38,7 @@ shall be removed from the list of candidates to walk to"
           end
           finally
              (progn
-               (when next (push next result))
+               (when next
+                 (funcall visitor next)
+                 (push next result))
                (return (nreverse result))))))
