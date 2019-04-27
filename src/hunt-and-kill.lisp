@@ -34,16 +34,14 @@ removed to form a maze"
             while (< visited-count total-count)
             for cell = start-cell then (hunt)
             for path = 
-                     (progn
-                       (visit cell)
-                       (random-walk cell
-                                    (lambda (c)
-                                      (visit c)
-                                      (null
-                                       (not-visited-neighbours c)))
-                                    :constraint-if
-                                    (lambda (c)
-                                      (gethash c visited))))
+                     (random-walk cell
+                                  (lambda (c)
+                                    (null
+                                     (not-visited-neighbours c)))
+                                  :visitor #'visit
+                                  :constraint-if
+                                  (lambda (c)
+                                    (gethash c visited)))
             do
                (reduce
                 (lambda (c1 c2) (cell-link c1 c2) c2)

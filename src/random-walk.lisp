@@ -1,6 +1,9 @@
 (in-package :maze-gen)
 ;;
 (defun random-walk (from finish-if &key (allow-loops nil)
+                         (visitor (lambda (c)
+                                    (declare (ignore c))
+                                    (values)))
                          (constraint-if
                           (lambda (c)
                             (declare (ignore c)) nil)))
@@ -20,13 +23,18 @@ shall be removed from the list of candidates to walk to"
     (loop with result = (list from)
           for current = (car result)
           for next = (walk current)
-          until (or (null next) (funcall finish-if next))
-          do
           ;; loop avoidance
-          (let ((mem (member next result)))
-            (if (and mem (not allow-loops))
-                (setf result mem)
-                (push next result)))
+          for mem = (member next result)
+          until (or (null next) (funcall finish-if next))
+          if (and mem (not allow-loops))
+            ;; loop avoidance
+            do
+               (setf result mem)
+          else
+            do
+               (progn (funcall visitor next)
+                      (push next result))
+          end
           finally
              (progn
                (when next (push next result))
