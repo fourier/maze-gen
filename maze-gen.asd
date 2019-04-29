@@ -9,7 +9,7 @@
 (in-package :maze-gen-asd)
 
 (defsystem maze-gen
-  :version "0.3"
+  :version "0.4"
   :author ""
   :license ""
   :depends-on (alexandria)

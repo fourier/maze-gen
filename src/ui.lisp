@@ -1,6 +1,6 @@
 (in-package :maze-gen)
 
-(defparameter *version* 0.3)
+(defparameter *version* 0.4)
 
 ;; shortcut/convenience macro
 (defmacro with-pane-process ((self) &body body)
