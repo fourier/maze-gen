@@ -55,8 +55,8 @@
         :callback-type :interface))))))
   (:panes
    (draw-board output-pane
-               :min-width 600
-               :min-height 600
+               :min-width 500
+               :min-height 500
                :draw-with-buffer t
                :resize-callback 'on-resize-draw-board
                :display-callback 'on-redisplay-draw-board)
