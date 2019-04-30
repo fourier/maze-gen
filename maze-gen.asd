@@ -10,9 +10,9 @@
 
 (defsystem maze-gen
   :version "0.4"
-  :author ""
+  :author "Alexey Veretennikov"
   :license ""
-  :depends-on (alexandria)
+  :depends-on (alexandria #-lispworks unix-opts)
   :components ((:module "src"
                 :components
                 ((:file "package")
@@ -30,6 +30,7 @@
                  (:file "recursive-backtracker")
                  (:file "print")
                  (:file "trenchbroom")
-                 #+lispworks(:file "ui"))))
+                 #+lispworks(:file "ui")
+                 #-lispworks(:file "cmdline"))))
   :description "Procedural maze generation")
 
