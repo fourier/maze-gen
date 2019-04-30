@@ -10,7 +10,8 @@
     ("sidewinder" . sidewinder)
     ("aldous-broder" . aldous-broder)
     ("wilson" . wilson)
-    ("hunt-and-kill" . hunt-and-kill)))
+    ("hunt-and-kill" . hunt-and-kill)
+    ("backtracker" . recursive-backtracker)))
   
 
 (defparameter *long-description*
@@ -57,13 +58,7 @@ or the file provided. The supported algorithms (specified by --algo option) are:
    :short #\a
    :long "algo"
    :arg-parser #'parse-algo
-   :meta-var "ALGO")
-  (:name :output
-   :description "redirect output to file FILE"
-   :short #\o
-   :long "output"
-   :arg-parser #'identity
-   :meta-var "FILE"))
+   :meta-var "ALGO"))
 
 
 (defun unknown-option (condition)
@@ -85,7 +80,6 @@ or the file provided. The supported algorithms (specified by --algo option) are:
   (let ((nrows 15)
         (ncols 15)
         (algo #'hunt-and-kill)
-        (fname nil)
         (show-start-end nil)
         (show-path nil))
     (multiple-value-bind (options free-args)
@@ -124,8 +118,6 @@ or the file provided. The supported algorithms (specified by --algo option) are:
         (when (< it 1)
           (format t "fatal: Number of columns could not be less than 1, given: ~a~%" it)
           (opts:exit 1)))
-      (when-option (options :output)
-        (setf fname (getf options :output)))
       (when-option (options :algo)
         (setf algo (getf options :algo))))
     ;; seed the random state
