@@ -3,19 +3,28 @@
 (defclass grid ()
   ((rows :initarg :rows :initform *max-rows* :type fixnum :reader grid-nrows)
    (cols :initarg :cols :initform *max-cols* :type fixnum :reader grid-ncols)
+   (mask :initarg :mask :initform nil
+         :documentation "boolean mask. if the value is T then the cell is accessible")
    (grid :initform nil))
   (:documentation "The GRID of the maze - the 2d array of cells"))
 
 (defmethod initialize-instance :after ((self grid) &key &allow-other-keys)
   "Constructor for the pack-file class"
-  (with-slots (rows cols grid) self
-    (setf grid (make-array (list rows cols) :element-type 'cell))
+  (with-slots (rows cols grid mask) self
+    (setf grid (make-array (list rows cols) :element-type 'cell :initial-element nil))
+    (unless mask
+      (setf mask (make-array (list rows cols) :element-type 'boolean :initial-element t)))
+    ;; sanity check
+    (assert (equal (list rows cols) (array-dimensions mask)))
     (loop for i below rows do
-          (loop for j below cols do
+          (loop for j below cols 
+                when (aref mask i j)
+                do 
                 (setf (aref grid i j) (make-instance 'cell :row i :col j))))
      (loop for i below rows do
           (loop for j below cols
                 for c = (aref grid i j)
+                when c
                 do
                 (cell-set-neighbour c 'north (grid-cell self (1- i) j))
                 (cell-set-neighbour c 'south (grid-cell self (1+ i) j))
@@ -26,12 +35,19 @@
 (defmethod grid-cell ((self grid) row col)
   "Return the cell from the grid by row and column.
 If out of bounds return nil"
-  (handler-case (aref (slot-value self 'grid) row col) (error nil)))
+  (with-slots (grid mask) self
+    (when-let ((cell (handler-case (aref grid row col) (error nil))))
+      (when (aref mask row col) cell))))
+         
 
 
 (defmethod grid-size ((self grid))
   "Return the number of cells in the grid"
-  (* (slot-value self 'rows) (slot-value self 'cols)))
+  (with-slots (rows cols mask) self
+    (loop for i below rows
+          sum
+          (loop for j below cols
+                sum (if (aref mask i j) 1 0)))))
 
 
 (defmethod grid-random-cell ((self grid) &key (excluding nil))
@@ -40,8 +56,11 @@ When excluding (cell to exclude) provided search any random
 cell which is not the same and excluding."
   (loop with nrows = (slot-value self 'rows)
         and ncols = (slot-value self 'cols)
-        for cell = (grid-cell self (random nrows) (random ncols))
-        while (eql cell excluding)
+        and mask = (slot-value self 'mask)
+        for i = (random nrows)
+        for j = (random ncols)
+        for cell = (grid-cell self i j)
+        while (and (eql cell excluding) (not (aref mask i j)))
         finally (return cell)))
 
 
@@ -52,7 +71,8 @@ The row is provided as a list of cells"
     (loop for i below rows do
           (funcall fn 
                    (loop for j below cols
-                         collect (aref grid i j)))))
+                         for cell = (grid-cell self i j)
+                         collect cell))))
   self)
 
 
@@ -60,8 +80,11 @@ The row is provided as a list of cells"
   "For each cell of the grid call the function FN"
   (with-slots (rows cols grid) self
     (loop for i below rows do
-          (loop for j below cols do
-                (funcall fn (aref grid i j)))))
+          (loop for j below cols
+                for cell = (grid-cell self i j)
+                when cell
+                do
+                (funcall fn cell))))
   self)
 
 
@@ -117,8 +140,7 @@ the coordinates basically indexes, i.e.
 i.e. then the end of one wall is the beginning of another.
 Will return the new list optimized 1 pass"
   (warn "Not implemented")
-  (let ((new-walls-list))
-    walls-list))
+    walls-list)
 
 
 ;; end

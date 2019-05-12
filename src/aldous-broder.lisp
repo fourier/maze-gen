@@ -6,10 +6,9 @@ basically the random walk algorithm.
 Returns the copy of the grid with boundaries
 removed to form a maze"
   (flet ((walk (from)
-           (random-elt (remove-if #'null (cell-neighbours from)))))
+           (random-elt (cell-neighbours from))))
     (loop with visited = (make-hash-table)
-          with total-count = (* (grid-nrows grid)
-                                (grid-ncols grid))
+          with total-count = (grid-size grid)
           with start-cell = (grid-random-cell grid)
           for visited-count = (hash-table-count visited)
           while (< visited-count total-count)

@@ -9,10 +9,7 @@ removed to form a maze"
     (labels ((visit (c) (setf (gethash c visited) t))
              (visited (c) (gethash c visited))
              (not-visited-neighbours (c)
-               (remove-if
-                (lambda (c)
-                  (or (null c) (visited c)))
-                (cell-neighbours c)))
+               (remove-if #'visited (cell-neighbours c)))
              (hunt ()
                (loop named hunt-loop
                      for i below (grid-nrows grid)
@@ -26,8 +23,7 @@ removed to form a maze"
                                               (random-elt neighbours))
                                    (return-from hunt-loop c))
                      finally (return-from hunt-loop nil))))
-      (loop with total-count = (* (grid-nrows grid)
-                                  (grid-ncols grid))
+      (loop with total-count = (grid-size grid)
             with start-cell = (grid-random-cell grid)
             for visited-count = (hash-table-count visited)
             while (< visited-count total-count)

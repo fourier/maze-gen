@@ -15,9 +15,7 @@ of the result list
 CONSTRAINT-IF is a predicate specifying if the cell
 shall be removed from the list of candidates to walk to"
   (flet ((walk (from)
-           (let ((cells (remove-if (lambda (c)
-                                     (or (null c)
-                                         (funcall constraint-if c)))
+           (let ((cells (remove-if constraint-if 
                                    (cell-neighbours from))))
              (random-elt cells))))
     (funcall visitor from)

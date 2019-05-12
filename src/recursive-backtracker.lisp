@@ -10,11 +10,7 @@ removed to form a maze"
     (labels ((visit (c) (setf (gethash c visited) t))
              (visited (c) (gethash c visited))
              (not-visited-neighbours (c)
-               (remove-if
-                (lambda (c)
-                  (or (null c)
-                      (visited c)))
-                (cell-neighbours c)))
+               (remove-if #'visited (cell-neighbours c)))
              (backtrack ()
                "Pop from the stack until we find not visited neighbour"
                (loop while stack

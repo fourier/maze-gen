@@ -44,8 +44,9 @@ Link means no borders between cells"
 
 (defmethod cell-neighbours ((self cell))
   "Get all cell neighbours (east,west,north,south)"
-  (loop for val being the hash-values of (slot-value self 'neighbors)
-        collect val))
+  (remove-if #'null
+             (loop for val being the hash-values of (slot-value self 'neighbors)
+                   collect val)))
 
 
 (defmethod cell-get-neighbour ((self cell) direction)
@@ -55,9 +56,10 @@ NORTH, SOUTH, EAST, WEST"
 
 
 (defmethod cell-set-neighbour ((self cell) direction other)
-    "Set a cell's neigbour, direction is one of symbols
+  "Set a cell's neigbour, direction is one of symbols
 NORTH, SOUTH, EAST, WEST"
-  (setf (gethash direction (slot-value self 'neighbors)) other))
+  (when other
+    (setf (gethash direction (slot-value self 'neighbors)) other)))
 
 
 ;; end

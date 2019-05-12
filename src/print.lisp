@@ -25,10 +25,14 @@
                          "   +"
                          "---+")))
            (format stream "~%")))
+    ;; output first line - upper wall
     (format stream "+")
     (loop for i below (grid-ncols self)
           do (format stream "---+")
           finally (format stream "~%"))
+
+    
+    
     (grid-map-row self #'draw-row)))
 
 (defmethod grid-draw-numbers ((self grid) weights &optional (stream *standard-output*))
