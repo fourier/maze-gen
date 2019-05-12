@@ -142,5 +142,18 @@ Will return the new list optimized 1 pass"
   (warn "Not implemented")
     walls-list)
 
+;; test function
 
+(defun make-center-room-mask (rows cols)
+  (let ((mask (make-array (list rows cols) :element-type 'boolean :initial-element t)))
+    (if (and (> rows 5) (> cols 5))
+        (loop for i from 2 to (- rows 3)
+              do
+                 (loop for j from 2 to (- cols 3)
+                       do
+                          (setf (aref mask i j) nil))
+              finally (return mask))
+        mask)))
+                                       
+    
 ;; end
