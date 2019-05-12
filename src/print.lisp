@@ -12,16 +12,17 @@
            (dolist (c row)
              (funcall cell-draw c stream)
              (format stream
-             (if (cell-linked-p c (cell-get-neighbour c 'east))
-                 " "
-                 "|")))
+                     (if (and c
+                              (cell-linked-p c (cell-get-neighbour c 'east)))
+                         " "
+                         "|")))
            (format stream "~%")
            ;; now write the southern separator line, again
            ;; verifying if southern cells are connected
            (format stream "+")
            (dolist (c row)
              (format stream
-                     (if (cell-linked-p c (cell-get-neighbour c 'south))
+                     (if (and c (cell-linked-p c (cell-get-neighbour c 'south)))
                          "   +"
                          "---+")))
            (format stream "~%")))
@@ -30,7 +31,7 @@
     (loop for i below (grid-ncols self)
           do (format stream "---+")
           finally (format stream "~%"))
-
+    
     
     
     (grid-map-row self #'draw-row)))

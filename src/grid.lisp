@@ -11,7 +11,7 @@
 (defmethod initialize-instance :after ((self grid) &key &allow-other-keys)
   "Constructor for the pack-file class"
   (with-slots (rows cols grid mask) self
-    (setf grid (make-array (list rows cols) :element-type 'cell :initial-element nil))
+    (setf grid (make-array (list rows cols) :element-type '(or cell null) :initial-element nil))
     (unless mask
       (setf mask (make-array (list rows cols) :element-type 'boolean :initial-element t)))
     ;; sanity check

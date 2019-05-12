@@ -64,11 +64,11 @@ Returns 2 values:
 - the start and end cells of the longest path;
 2. a hash table of visited cells. The key is the cell, the
 value is the distance (number)"
-  ;; get the hash-table of distances from the starting point
-  ;; (0, 0) 
-  (let ((distances (dijkstra-bfs grid (grid-cell grid 0 0)))
-        (max-distance 0)
-        (max-cell (grid-cell grid 0 0)))
+  ;; get the hash-table of distances from the random starting point
+  (let* ((start-cell (grid-random-cell grid))
+         (distances (dijkstra-bfs grid start-cell))
+         (max-distance 0)
+         (max-cell start-cell))
     ;; find the cell which is most remote from the start cell 0 0
     (grid-map grid
               (lambda (c)
