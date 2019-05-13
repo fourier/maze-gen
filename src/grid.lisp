@@ -92,7 +92,7 @@ The row is provided as a list of cells"
   (let ((deadends nil))
     (grid-map self
               (lambda (c)
-                (when (= (length (cell-links c)) 1)
+                (when (<= (length (cell-links c)) 1)
                   (push c deadends))))
     deadends))
 

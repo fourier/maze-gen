@@ -19,6 +19,7 @@
                  (:file "utils")
                  (:file "cell")
                  (:file "grid")
+                 (:file "braiding")
                  (:file "dungeon")
                  (:file "random-walk")
                  (:file "binary-tree")
