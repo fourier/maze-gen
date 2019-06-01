@@ -57,9 +57,22 @@ NORTH, SOUTH, EAST, WEST"
 
 (defmethod cell-set-neighbour ((self cell) direction other)
   "Set a cell's neigbour, direction is one of symbols
-NORTH, SOUTH, EAST, WEST"
-  (when other
-    (setf (gethash direction (slot-value self 'neighbors)) other)))
+NORTH, SOUTH, EAST, WEST.
+If the OTHER cell is nil, remove the existing neighbour"
+  (if other
+      (setf (gethash direction (slot-value self 'neighbors)) other)
+      (remhash direction (slot-value self 'neighbors))))
+
+(defmethod cell-rem-neighbour ((self cell) neighbor)
+  "If the cell NEIGHBOR is one of the neighbors,
+remove it from the list of neighbors"
+  (with-slots (neighbors) self
+    (loop for k being the hash-keys in neighbors
+            using (hash-value v)
+          when (eql v neighbor) do
+            (remhash k neighbors)
+            (return))))
+
 
 
 ;; end
