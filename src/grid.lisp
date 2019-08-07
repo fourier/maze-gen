@@ -133,17 +133,9 @@ the coordinates basically indexes, i.e.
 
 
   
-
-
-(defun walls-optimize (walls-list)
-  "Try to optimize walls list by connecting close walls,
-i.e. then the end of one wall is the beginning of another.
-Will return the new list optimized 1 pass"
-  (warn "Not implemented")
-    walls-list)
-
 ;; test function
 
+#+nil
 (defun make-center-room-mask (rows cols)
   (let ((mask (make-array (list rows cols) :element-type 'boolean :initial-element t)))
     (if (and (> rows 5) (> cols 5))
