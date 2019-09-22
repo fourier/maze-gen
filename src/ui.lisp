@@ -85,7 +85,8 @@
                                       :uniform-size-p t)
                        :selection-callback 'on-draw-options-checkbox-selected
                        :retract-callback 'on-draw-options-checkbox-retracted)
-   (size-slider slider :start 10 :end 100 :tick-frequency 10)
+   (size-slider slider :start 10 :end 100 :tick-frequency 10 :title "Size of the maze")
+   (braiding-button push-button :text "Braid" :callback 'on-braiding-button)
    (convert-button push-button :text "Regenerate" :callback 'on-generate-button))
   (:layouts
    (algorithm-options-layout column-layout
@@ -93,8 +94,8 @@
                              :title "Algorithms"
                              :title-position :frame)
    (geometry-options-layout column-layout
-                            '(size-slider)
-                            :title "Size of the maze"
+                            '(size-slider braiding-button)
+                            :title "Geometry"
                             :title-position :frame)
    (draw-options-layout column-layout
                         '(draw-options-panel)
@@ -127,6 +128,15 @@
       (setf grid (funcall algo-fun (make-instance 'grid :rows size :cols size)))
       ;; force redisplay
       (gp:invalidate-rectangle draw-board))))
+
+
+(defun on-braiding-button (data self)
+  (declare (ignore data))           
+  (with-slots (draw-board grid) self
+    (setf grid (braid grid 90))
+    ;; force redisplay
+    (gp:invalidate-rectangle draw-board)))
+
 
 
 (defmethod setting-selected ((self maze-gen-ui) option)
